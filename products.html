@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Product Management</title>
+
+<style>
+body{
+font-family:Arial;
+background:#f4f4f4;
+padding:30px;
+}
+
+.container{
+background:white;
+padding:20px;
+width:600px;
+margin:auto;
+border-radius:10px;
+box-shadow:0 0 10px rgba(0,0,0,0.2);
+}
+
+input{
+width:100%;
+padding:10px;
+margin:10px 0;
+}
+
+button{
+padding:8px 15px;
+margin:5px;
+border:none;
+cursor:pointer;
+}
+
+.addBtn{ background:#28a745;color:white;}
+.updateBtn{ background:#007bff;color:white;}
+.editBtn{ background:#ffc107;}
+.deleteBtn{ background:#dc3545;color:white;}
+
+table{
+width:100%;
+margin-top:20px;
+border-collapse:collapse;
+}
+
+table,th,td{
+border:1px solid #ccc;
+padding:10px;
+text-align:center;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Product Management</h2>
+
+<input type="text" id="productName" placeholder="Product Name">
+<input type="number" id="productPrice" placeholder="Price">
+
+<button class="addBtn" onclick="addProduct()">Add Product</button>
+<button class="updateBtn" onclick="updateProduct()">Update Product</button>
+
+<h3>Product List</h3>
+
+<table>
+
+<thead>
+<tr>
+<th>Name</th>
+<th>Price</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody id="productTable"></tbody>
+
+</table>
+
+<br>
+<a href="billing.html">Go To Billing</a>
+
+</div>
+
+<script>
+
+let editIndex = -1;
+
+function loadProducts(){
+
+let products = JSON.parse(localStorage.getItem("products")) || [];
+
+let html="";
+
+products.forEach((p,index)=>{
+
+html += `
+<tr>
+<td>${p.name}</td>
+<td>${p.price}</td>
+<td>
+<button class="editBtn" onclick="editProduct(${index})">Edit</button>
+<button class="deleteBtn" onclick="deleteProduct(${index})">Delete</button>
+</td>
+</tr>
+`;
+
+});
+
+document.getElementById("productTable").innerHTML = html;
+
+}
+
+function addProduct(){
+
+let name = document.getElementById("productName").value;
+let price = document.getElementById("productPrice").value;
+
+if(name=="" || price==""){
+alert("Enter product details");
+return;
+}
+
+let products = JSON.parse(localStorage.getItem("products")) || [];
+
+products.push({
+name:name,
+price:price
+});
+
+localStorage.setItem("products",JSON.stringify(products));
+
+clearForm();
+
+loadProducts();
+
+}
+
+function editProduct(index){
+
+let products = JSON.parse(localStorage.getItem("products"));
+
+document.getElementById("productName").value = products[index].name;
+document.getElementById("productPrice").value = products[index].price;
+
+editIndex = index;
+
+}
+
+function updateProduct(){
+
+if(editIndex === -1){
+alert("Select a product to edit");
+return;
+}
+
+let products = JSON.parse(localStorage.getItem("products"));
+
+products[editIndex].name = document.getElementById("productName").value;
+products[editIndex].price = document.getElementById("productPrice").value;
+
+localStorage.setItem("products",JSON.stringify(products));
+
+editIndex = -1;
+
+clearForm();
+
+loadProducts();
+
+}
+
+function deleteProduct(index){
+
+let products = JSON.parse(localStorage.getItem("products"));
+
+products.splice(index,1);
+
+localStorage.setItem("products",JSON.stringify(products));
+
+loadProducts();
+
+}
+
+function clearForm(){
+
+document.getElementById("productName").value="";
+document.getElementById("productPrice").value="";
+
+}
+
+loadProducts();
+
+</script>
+
+</body>
+</html>

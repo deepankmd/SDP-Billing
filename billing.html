@@ -1,0 +1,162 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Billing System</title>
+
+<!-- JQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Select2 -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f4f4f4;
+padding:30px;
+}
+
+.container{
+background:white;
+padding:20px;
+width:750px;
+margin:auto;
+border-radius:10px;
+box-shadow:0 0 10px rgba(0,0,0,0.2);
+}
+
+select,input{
+padding:8px;
+margin:5px;
+width:200px;
+}
+
+button{
+padding:10px 20px;
+background:#007bff;
+color:white;
+border:none;
+cursor:pointer;
+}
+
+table{
+width:100%;
+margin-top:20px;
+border-collapse:collapse;
+}
+
+table,th,td{
+border:1px solid #ccc;
+padding:10px;
+text-align:center;
+}
+
+.total{
+font-size:20px;
+font-weight:bold;
+margin-top:20px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Billing</h2>
+
+<select id="productSelect" style="width:300px"></select>
+
+<input type="number" id="qty" placeholder="Qty">
+
+<button onclick="addItem()">Add</button>
+
+<table>
+
+<thead>
+<tr>
+<th>Product</th>
+<th>Price</th>
+<th>Qty</th>
+<th>Total</th>
+</tr>
+</thead>
+
+<tbody id="billTable"></tbody>
+
+</table>
+
+<div class="total">
+Grand Total : ₹ <span id="grandTotal">0</span>
+</div>
+
+<br>
+<a href="products.html">Manage Products</a>
+
+</div>
+
+<script>
+
+let products=[];
+let grandTotal=0;
+
+function loadProducts(){
+
+products = JSON.parse(localStorage.getItem("products")) || [];
+
+let options="";
+
+products.forEach((p,i)=>{
+options+=`<option value="${i}">${p.name} - ₹${p.price}</option>`;
+});
+
+$("#productSelect").html(options);
+
+$("#productSelect").select2({
+placeholder:"Search Product",
+allowClear:true
+});
+
+}
+
+function addItem(){
+
+let index=$("#productSelect").val();
+let qty=document.getElementById("qty").value;
+
+if(index==null || qty==""){
+alert("Select product and quantity");
+return;
+}
+
+let product=products[index];
+
+let total=product.price*qty;
+
+grandTotal+=total;
+
+let row=`<tr>
+<td>${product.name}</td>
+<td>${product.price}</td>
+<td>${qty}</td>
+<td>${total}</td>
+</tr>`;
+
+document.getElementById("billTable").innerHTML+=row;
+
+document.getElementById("grandTotal").innerText=grandTotal;
+
+document.getElementById("qty").value="";
+
+}
+
+loadProducts();
+
+</script>
+
+</body>
+</html>
