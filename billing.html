@@ -1,16 +1,18 @@
-
 <!DOCTYPE html>
 <html>
 <head>
 <title>Billing System</title>
 
-<!-- JQuery -->
+<!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<!-- Select2 -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<!-- jQuery UI (Autocomplete) -->
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+
+<!-- jsPDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
 
 body{
@@ -28,10 +30,10 @@ border-radius:10px;
 box-shadow:0 0 10px rgba(0,0,0,0.2);
 }
 
-select,input{
+input{
 padding:8px;
 margin:5px;
-width:200px;
+width:220px;
 }
 
 button{
@@ -40,6 +42,7 @@ background:#007bff;
 color:white;
 border:none;
 cursor:pointer;
+margin:5px;
 }
 
 table{
@@ -69,7 +72,8 @@ margin-top:20px;
 
 <h2>Billing</h2>
 
-<select id="productSelect" style="width:300px"></select>
+<input type="text" id="productSearch" placeholder="Type product name">
+<input type="hidden" id="productIndex">
 
 <input type="number" id="qty" placeholder="Qty">
 
@@ -96,7 +100,9 @@ Grand Total : ₹ <span id="grandTotal">0</span>
 
 <button onclick="saveSale()">Complete Sale</button>
 <button onclick="generateMonthlyPDF()">Download Monthly Sales PDF</button>
-<br>
+
+<br><br>
+
 <a href="products.html">Manage Products</a>
 
 </div>
@@ -106,40 +112,57 @@ Grand Total : ₹ <span id="grandTotal">0</span>
 let products=[];
 let grandTotal=0;
 
+/* LOAD PRODUCTS */
+
 function loadProducts(){
 
 products = JSON.parse(localStorage.getItem("products")) || [];
 
-let options="";
+let productList = products.map((p,i)=>({
+label: p.name + " - ₹" + p.price,
+value: p.name,
+index: i
+}));
 
-products.forEach((p,i)=>{
-options+=`<option value="${i}">${p.name} - ₹${p.price}</option>`;
-});
+$("#productSearch").autocomplete({
 
-$("#productSelect").html(options);
+source: productList,
 
-$("#productSelect").select2({
-placeholder:"Search Product",
-allowClear:true
+select: function(event, ui){
+
+$("#productSearch").val(ui.item.value);
+
+$("#productIndex").val(ui.item.index);
+
+return false;
+
+}
+
 });
 
 }
 
+loadProducts();
+
+/* ADD ITEM */
+
 function addItem(){
 
-let index=$("#productSelect").val();
+let index=document.getElementById("productIndex").value;
 let qty=document.getElementById("qty").value;
 
-if(index==null || qty==""){
+if(index=="" || qty==""){
+
 alert("Select product and quantity");
 return;
+
 }
 
 let product=products[index];
 
-let total=product.price*qty;
+let total=product.price * qty;
 
-grandTotal+=total;
+grandTotal += total;
 
 let row=`<tr>
 <td>${product.name}</td>
@@ -148,15 +171,17 @@ let row=`<tr>
 <td>${total}</td>
 </tr>`;
 
-document.getElementById("billTable").innerHTML+=row;
+document.getElementById("billTable").innerHTML += row;
 
-document.getElementById("grandTotal").innerText=grandTotal;
+document.getElementById("grandTotal").innerText = grandTotal;
 
 document.getElementById("qty").value="";
+document.getElementById("productSearch").value="";
+document.getElementById("productIndex").value="";
 
 }
 
-loadProducts();
+/* SAVE SALE */
 
 function saveSale(){
 
@@ -174,6 +199,8 @@ localStorage.setItem("sales", JSON.stringify(sales));
 alert("Sale saved");
 
 }
+
+/* GENERATE MONTHLY PDF */
 
 async function generateMonthlyPDF(){
 
@@ -195,7 +222,7 @@ return d.getMonth() === currentMonth &&
 
 let total = 0;
 
-monthlySales.forEach(s => total += s.total);
+monthlySales.forEach(s => total += Number(s.total));
 
 const doc = new jsPDF();
 
@@ -223,8 +250,6 @@ doc.text("Total Monthly Sales: ₹" + total, 20, y + 10);
 doc.save("MonthlySalesReport.pdf");
 
 }
-
-
 
 </script>
 
