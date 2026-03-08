@@ -82,7 +82,10 @@ text-align:center;
 
 <br>
 <a href="billing.html">Go To Billing</a>
+<button onclick="exportProducts()">Export Products</button>
 
+<input type="file" id="importFile" accept=".json">
+<button onclick="importProducts()">Import Products</button>
 </div>
 
 <script>
@@ -193,6 +196,59 @@ document.getElementById("productPrice").value="";
 
 loadProducts();
 
+function exportProducts(){
+
+let products = JSON.parse(localStorage.getItem("products")) || [];
+
+let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(products,null,2));
+
+let downloadAnchor = document.createElement("a");
+
+downloadAnchor.setAttribute("href", dataStr);
+downloadAnchor.setAttribute("download", "products.json");
+
+document.body.appendChild(downloadAnchor);
+downloadAnchor.click();
+downloadAnchor.remove();
+
+}
+
+
+function importProducts(){
+
+const fileInput = document.getElementById("importFile");
+
+if(!fileInput.files.length){
+alert("Please select a JSON file");
+return;
+}
+
+const file = fileInput.files[0];
+const reader = new FileReader();
+
+reader.onload = function(event){
+
+try{
+
+let products = JSON.parse(event.target.result);
+
+localStorage.setItem("products", JSON.stringify(products));
+
+alert("Products Imported Successfully");
+
+loadProducts(); // refresh table
+
+}catch(err){
+
+alert("Invalid JSON file");
+
+}
+
+};
+
+reader.readAsText(file);
+
+}
 </script>
 
 </body>
