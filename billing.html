@@ -10,7 +10,7 @@
 <!-- Select2 -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 
 body{
@@ -94,6 +94,8 @@ margin-top:20px;
 Grand Total : ₹ <span id="grandTotal">0</span>
 </div>
 
+<button onclick="saveSale()">Complete Sale</button>
+<button onclick="generateMonthlyPDF()">Download Monthly Sales PDF</button>
 <br>
 <a href="products.html">Manage Products</a>
 
@@ -155,6 +157,74 @@ document.getElementById("qty").value="";
 }
 
 loadProducts();
+
+function saveSale(){
+
+let sales = JSON.parse(localStorage.getItem("sales")) || [];
+
+let sale = {
+date: new Date().toISOString(),
+total: grandTotal
+};
+
+sales.push(sale);
+
+localStorage.setItem("sales", JSON.stringify(sales));
+
+alert("Sale saved");
+
+}
+
+async function generateMonthlyPDF(){
+
+const { jsPDF } = window.jspdf;
+
+let sales = JSON.parse(localStorage.getItem("sales")) || [];
+
+let currentMonth = new Date().getMonth();
+let currentYear = new Date().getFullYear();
+
+let monthlySales = sales.filter(s => {
+
+let d = new Date(s.date);
+
+return d.getMonth() === currentMonth &&
+       d.getFullYear() === currentYear;
+
+});
+
+let total = 0;
+
+monthlySales.forEach(s => total += s.total);
+
+const doc = new jsPDF();
+
+doc.setFontSize(18);
+doc.text("Monthly Sales Report", 20, 20);
+
+doc.setFontSize(12);
+
+let y = 40;
+
+monthlySales.forEach((sale,index)=>{
+
+doc.text(
+`Sale ${index+1} - ${new Date(sale.date).toLocaleDateString()} - ₹${sale.total}`,
+20,
+y
+);
+
+y += 10;
+
+});
+
+doc.text("Total Monthly Sales: ₹" + total, 20, y + 10);
+
+doc.save("MonthlySalesReport.pdf");
+
+}
+
+
 
 </script>
 
